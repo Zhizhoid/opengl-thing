@@ -5,8 +5,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 project(opengl_thing)
 
-find_package(OpenGL REQUIRED)
-
 # TODO: install jinja2 in venv
 
 add_subdirectory(deps/glfw)
@@ -18,12 +16,7 @@ glad_add_library(glad_gl STATIC API gl:core=4.6)
 
 add_executable(opengl_thing main.cpp)
 
-# Debug logs
-message("test: OPENGL_INCLUDE_DIRS=${OPENGL_INCLUDE_DIRS}")
-message("test: OPENGL_LIBRARIES=${OPENGL_LIBRARIES}")
-
 target_include_directories(opengl_thing PRIVATE deps/glfw/include)
 # target_include_directories(opengl_thing PRIVATE deps/glfw/deps)
-target_include_directories(opengl_thing PRIVATE ${OPENGL_INCLUDE_DIRS})
 
-target_link_libraries(opengl_thing ${OPENGL_LIBRARIES} glfw glad_gl)
+target_link_libraries(opengl_thing glfw glad_gl)
