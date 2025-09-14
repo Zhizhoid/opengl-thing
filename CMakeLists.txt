@@ -20,3 +20,5 @@ target_include_directories(opengl_thing PRIVATE deps/glfw/include)
 # target_include_directories(opengl_thing PRIVATE deps/glfw/deps)
 
 target_link_libraries(opengl_thing glfw glad_gl)
+
+target_compile_options(opengl_thing PRIVATE -Wall -Wformat -Werror=format -Werror=mismatched-new-delete)

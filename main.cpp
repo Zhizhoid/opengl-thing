@@ -6,7 +6,6 @@
 // GLFW (include after glad)
 #include <GLFW/glfw3.h>
 
-
 // This example is taken from http://learnopengl.com/
 // http://learnopengl.com/code_viewer.php?code=getting-started/hellowindow2
 // The code originally used GLEW, I replaced it with Glad
@@ -14,28 +13,72 @@
 // Compile:
 // g++ example/c++/hellowindow2.cpp -Ibuild/include build/src/gl.c -lglfw -ldl
 
-
 // Function prototypes
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
 
 // Window dimensions
 const GLuint WIDTH = 800, HEIGHT = 600;
 
+static GLuint compileShader(GLenum type, const std::string &source)
+{
+    GLuint id = glCreateShader(type);
+    const char *sourceRaw = source.c_str();
+    glShaderSource(id, 1, &sourceRaw, nullptr);
+    glCompileShader(id);
 
-// The MAIN function, from here we start the application and run the game loop
+    GLint compileStatus;
+    glGetShaderiv(id, GL_COMPILE_STATUS, &compileStatus);
+    if (compileStatus != GL_TRUE)
+    {
+        GLint logBuffSize;
+        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &logBuffSize);
+        char *logBuff = new char[logBuffSize];
+
+        GLint logWroteLength;
+        glGetShaderInfoLog(id, logBuffSize, &logWroteLength, logBuff);
+
+        std::printf("Failed to compile shader! (type: %u)\nDumping logs:\n%s", type, logBuff);
+
+        delete[] logBuff;
+    }
+
+    return id;
+}
+
+static GLuint createProgram(const std::string &vsSource, const std::string &fsSource)
+{
+    GLuint program = glCreateProgram();
+    GLuint vs = compileShader(GL_VERTEX_SHADER, vsSource);
+    GLuint fs = compileShader(GL_FRAGMENT_SHADER, fsSource);
+
+    glAttachShader(program, vs);
+    glAttachShader(program, fs);
+    glLinkProgram(program);
+    glValidateProgram(program);
+
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+
+    // FIXME: needed or not?
+    // glDetachShader(program, vs);
+    // glDetachShader(program, fs);
+
+    return program;
+}
+
 int main()
 {
-    std::cout << "Starting GLFW context, OpenGL 3.3" << std::endl;
     // Init GLFW
     glfwInit();
     // Set all the required options for GLFW
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
     // Create a GLFWwindow object that we can use for GLFW's functions
-    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", NULL, NULL);
     glfwMakeContextCurrent(window);
     if (window == NULL)
     {
@@ -61,16 +104,51 @@ int main()
     // Define the viewport dimensions
     glViewport(0, 0, WIDTH, HEIGHT);
 
+    // VAO needed in core profile
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    float vertexPositions[]{
+        -0.5f, -0.5f, //
+        0.0f, 0.5f,   //
+        0.5f, -0.5f,  //
+    };
+
+    GLuint buffer;
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+    glEnableVertexAttribArray(0);
+
+    const std::string vs =
+        "#version 330 core\n"
+        "layout(location = 0) in vec4 position;\n"
+        "void main() {\n"
+        "   gl_Position = position;\n"
+        "}\n";
+
+    const std::string fs =
+        "#version 330 core\n"
+        "layout(location = 0) out vec4 color;\n"
+        "void main() {\n"
+        "   color = vec4(1.0, 0.0, 0.0, 1.0);\n"
+        "}\n";
+
+    GLuint program = createProgram(vs, fs);
+    glUseProgram(program);
+
     // Game loop
     while (!glfwWindowShouldClose(window))
     {
         // Check if any events have been activated (key pressed, mouse moved etc.) and call corresponding response functions
         glfwPollEvents();
 
-        // Render
-        // Clear the colorbuffer
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         // Swap the screen buffers
         glfwSwapBuffers(window);
@@ -82,7 +160,7 @@ int main()
 }
 
 // Is called whenever a key is pressed/released via GLFW
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
