@@ -60,8 +60,8 @@ static GLuint createProgram(const std::string &vsSource, const std::string &fsSo
     glDeleteShader(fs);
 
     // FIXME: needed or not?
-    // glDetachShader(program, vs);
-    // glDetachShader(program, fs);
+    glDetachShader(program, vs);
+    glDetachShader(program, fs);
 
     return program;
 }
@@ -153,6 +153,8 @@ int main()
         // Swap the screen buffers
         glfwSwapBuffers(window);
     }
+
+    glDeleteProgram(program);
 
     // Terminates GLFW, clearing any resources allocated by GLFW.
     glfwTerminate();
