@@ -1,4 +1,7 @@
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <optional>
 
 // GLAD
 #include <glad/gl.h>
@@ -66,6 +69,20 @@ static GLuint createProgram(const std::string &vsSource, const std::string &fsSo
     return program;
 }
 
+static std::optional<std::string> loadFileContents(const std::string &path)
+{
+    std::ifstream fin(path);
+
+    if (!fin.is_open()) {
+        std::printf("Failed to read from file: \"%s\"\n", path.c_str());
+        return std::nullopt;
+    }
+
+    auto res = std::string(std::istreambuf_iterator<char>(fin), std::istreambuf_iterator<char>());
+
+    return res;
+}
+
 int main()
 {
     // Init GLFW
@@ -122,19 +139,8 @@ int main()
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
     glEnableVertexAttribArray(0);
 
-    const std::string vs =
-        "#version 330 core\n"
-        "layout(location = 0) in vec4 position;\n"
-        "void main() {\n"
-        "   gl_Position = position;\n"
-        "}\n";
-
-    const std::string fs =
-        "#version 330 core\n"
-        "layout(location = 0) out vec4 color;\n"
-        "void main() {\n"
-        "   color = vec4(1.0, 0.0, 0.0, 1.0);\n"
-        "}\n";
+    const std::string vs = loadFileContents("../res/shaders/vs.glsl").value_or("");
+    const std::string fs = loadFileContents("../res/shaders/fs.glsl").value_or("");
 
     GLuint program = createProgram(vs, fs);
     glUseProgram(program);
