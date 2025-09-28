@@ -12,7 +12,7 @@ add_subdirectory(deps/glad/cmake)
 
 # TODO: probably change this somehow
 # glad_add_library(glad_gl REPRODUCIBLE MX API gl:core=3.3)
-glad_add_library(glad_gl STATIC API gl:core=4.6)
+glad_add_library(glad_gl STATIC API gl:core=3.3)
 
 add_executable(opengl_thing main.cpp)
 

@@ -3,18 +3,9 @@
 #include <string>
 #include <optional>
 
-// GLAD
 #include <glad/gl.h>
-
 // GLFW (include after glad)
 #include <GLFW/glfw3.h>
-
-// This example is taken from http://learnopengl.com/
-// http://learnopengl.com/code_viewer.php?code=getting-started/hellowindow2
-// The code originally used GLEW, I replaced it with Glad
-
-// Compile:
-// g++ example/c++/hellowindow2.cpp -Ibuild/include build/src/gl.c -lglfw -ldl
 
 // Function prototypes
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -127,9 +118,17 @@ int main()
     glBindVertexArray(vao);
 
     float vertexPositions[]{
-        -0.5f, -0.5f, //
-        0.0f, 0.5f,   //
-        0.5f, -0.5f,  //
+        // -0.5f, -0.5f, //
+        // 0.0f, 0.5f,   //
+        // 0.5f, -0.5f,  //
+                
+        .0f, .0f,
+        .5f, .0f,
+        .5f, .5f,
+        
+        .0f, .0f,
+        .0f, .5f,
+        .75f, .75f,
     };
 
     GLuint buffer;
@@ -154,7 +153,7 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, std::size(vertexPositions)/2);
 
         // Swap the screen buffers
         glfwSwapBuffers(window);
