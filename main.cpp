@@ -41,15 +41,32 @@ static GLuint compileShader(GLenum type, const std::string &source)
 
 static GLuint createProgram(const std::string &vsSource, const std::string &fsSource)
 {
-    GLuint program = glCreateProgram();
     GLuint vs = compileShader(GL_VERTEX_SHADER, vsSource);
     GLuint fs = compileShader(GL_FRAGMENT_SHADER, fsSource);
 
+    GLuint program = glCreateProgram();
     glAttachShader(program, vs);
     glAttachShader(program, fs);
     glLinkProgram(program);
     glValidateProgram(program);
 
+    GLint linkStatus;
+    glGetProgramiv(program, GL_LINK_STATUS, &linkStatus);
+    if (linkStatus != GL_TRUE)
+    {
+        GLint logBuffSize;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logBuffSize);
+        char *logBuff = new char[logBuffSize];
+
+        GLint logWroteLength;
+        glGetProgramInfoLog(program, logBuffSize, &logWroteLength, logBuff);
+
+        std::printf("Failed to link shader! \nDumping logs:\n%s", logBuff);
+
+        delete[] logBuff;
+    }
+
+    // FIXME: should shaders still be deleted and detached if shader linking failed?
     glDeleteShader(vs);
     glDeleteShader(fs);
 
@@ -64,7 +81,8 @@ static std::optional<std::string> loadFileContents(const std::string &path)
 {
     std::ifstream fin(path);
 
-    if (!fin.is_open()) {
+    if (!fin.is_open())
+    {
         std::printf("Failed to read from file: \"%s\"\n", path.c_str());
         return std::nullopt;
     }
@@ -118,24 +136,21 @@ int main()
     glBindVertexArray(vao);
 
     float vertexPositions[]{
-        // -0.5f, -0.5f, //
-        // 0.0f, 0.5f,   //
-        // 0.5f, -0.5f,  //
-                
-        .0f, .0f,
-        .5f, .0f,
-        .5f, .5f,
-        
-        .0f, .0f,
-        .0f, .5f,
-        .75f, .75f,
+        0.0f, 0.0f, 0.0f, //
+        0.5f, 0.0f, 0.0f, //
+        0.5f, 0.5f, 0.0f, //
+
+        0.0f, 0.0f, 0.0f,   //
+        0.0f, 0.5f, 0.0f,   //
+        0.5f, 0.5f, 0.0f, //
     };
 
-    GLuint buffer;
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+    
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
     glEnableVertexAttribArray(0);
 
     const std::string vs = loadFileContents("../res/shaders/vs.glsl").value_or("");
@@ -153,7 +168,7 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLES, 0, std::size(vertexPositions)/2);
+        glDrawArrays(GL_TRIANGLES, 0, std::size(vertexPositions) / 3);
 
         // Swap the screen buffers
         glfwSwapBuffers(window);
