@@ -135,21 +135,28 @@ int main()
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-    float vertexPositions[]{
+    float vertices[]{
         0.0f, 0.0f, 0.0f, //
         0.5f, 0.0f, 0.0f, //
         0.5f, 0.5f, 0.0f, //
+        0.0f, 0.5f, 0.0f, //
+    };
 
-        0.0f, 0.0f, 0.0f,   //
-        0.0f, 0.5f, 0.0f,   //
-        0.5f, 0.5f, 0.0f, //
+    unsigned int indices[]{
+        0, 1, 2, //
+        0, 2, 3, //
     };
 
     GLuint vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW);
-    
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    GLuint ebo;
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
     glEnableVertexAttribArray(0);
 
@@ -168,7 +175,7 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLES, 0, std::size(vertexPositions) / 3);
+        glDrawElements(GL_TRIANGLES, std::size(indices), GL_UNSIGNED_INT, 0);
 
         // Swap the screen buffers
         glfwSwapBuffers(window);
