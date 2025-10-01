@@ -160,8 +160,8 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
     glEnableVertexAttribArray(0);
 
-    const std::string vs = loadFileContents("../res/shaders/vs.glsl").value_or("");
-    const std::string fs = loadFileContents("../res/shaders/fs.glsl").value_or("");
+    const std::string vs = loadFileContents("../res/shaders/basic_color_position/vs.glsl").value_or("");
+    const std::string fs = loadFileContents("../res/shaders/basic_color_position/fs.glsl").value_or("");
 
     GLuint program = createProgram(vs, fs);
     glUseProgram(program);
