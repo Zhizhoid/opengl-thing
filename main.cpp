@@ -1,7 +1,7 @@
-#include <iostream>
 #include <fstream>
 #include <string>
 #include <optional>
+#include <log.hpp>
 
 #include <glad/gl.h>
 // GLFW (include after glad)
@@ -31,7 +31,8 @@ static GLuint compileShader(GLenum type, const std::string &source)
         GLint logWroteLength;
         glGetShaderInfoLog(id, logBuffSize, &logWroteLength, logBuff);
 
-        std::printf("Failed to compile shader! (type: %u)\nDumping logs:\n%s", type, logBuff);
+        // TODO: add dump option to logs and use it here
+        logs::log(logs::Level::Error, "Failed to compile shader! (type: %u)\nDumping logs:\n%s", type, logBuff);
 
         delete[] logBuff;
     }
@@ -61,7 +62,7 @@ static GLuint createProgram(const std::string &vsSource, const std::string &fsSo
         GLint logWroteLength;
         glGetProgramInfoLog(program, logBuffSize, &logWroteLength, logBuff);
 
-        std::printf("Failed to link shader! \nDumping logs:\n%s", logBuff);
+        logs::log(logs::Level::Error, "Failed to link shader! \nDumping logs:\n%s", logBuff);
 
         delete[] logBuff;
     }
@@ -83,7 +84,7 @@ static std::optional<std::string> loadFileContents(const std::string &path)
 
     if (!fin.is_open())
     {
-        std::printf("Failed to read from file: \"%s\"\n", path.c_str());
+        logs::log(logs::Level::Error, "Failed to read from file: \"%s\"\n", path.c_str());
         return std::nullopt;
     }
 
@@ -108,7 +109,7 @@ int main()
     glfwMakeContextCurrent(window);
     if (window == NULL)
     {
-        std::cout << "Failed to create GLFW window" << std::endl;
+        logs::log(logs::Level::Error, "Failed to create GLFW window");
         glfwTerminate();
         return -1;
     }
@@ -120,12 +121,12 @@ int main()
     int version = gladLoadGL(glfwGetProcAddress);
     if (version == 0)
     {
-        std::cout << "Failed to initialize OpenGL context" << std::endl;
+        logs::log(logs::Level::Error, "Failed to initialize OpenGL context");
         return -1;
     }
 
     // Successfully loaded OpenGL
-    std::cout << "Loaded OpenGL " << GLAD_VERSION_MAJOR(version) << "." << GLAD_VERSION_MINOR(version) << std::endl;
+    logs::log(logs::Level::Info, "Loaded OpenGL %d.%d", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
 
     // Define the viewport dimensions
     glViewport(0, 0, WIDTH, HEIGHT);
