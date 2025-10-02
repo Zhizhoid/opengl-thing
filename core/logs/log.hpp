@@ -4,6 +4,8 @@
 
 namespace logs
 {
+    // TODO: add tags to logs
+    // TODO: add timestamp to logs
     // TODO: add dump option to logs
 
     enum class Level
@@ -14,5 +16,5 @@ namespace logs
         Error,
     };
 
-    void log(Level level, const std::string &formatStr, ...);
+    void log(Level level, const char *formatStr, ...) [[gnu::format(printf, 2, 3)]];
 }

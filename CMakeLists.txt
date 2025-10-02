@@ -12,6 +12,9 @@ add_subdirectory(deps/glad/cmake)
 
 glad_add_library(glad_gl STATIC API gl:core=3.3)
 
+# both for this and subdirectories in this repo
+add_compile_options(-Wall -Wformat -Werror=format -Werror=mismatched-new-delete)
+
 # core
 add_subdirectory(core/logs)
 
@@ -22,4 +25,3 @@ target_link_libraries(opengl_thing glfw glad_gl)
 
 target_link_libraries(opengl_thing logs)
 
-target_compile_options(opengl_thing PRIVATE -Wall -Wformat -Werror=format -Werror=mismatched-new-delete)
