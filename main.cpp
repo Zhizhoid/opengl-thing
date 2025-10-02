@@ -31,7 +31,6 @@ static GLuint compileShader(GLenum type, const std::string &source)
         GLint logWroteLength;
         glGetShaderInfoLog(id, logBuffSize, &logWroteLength, logBuff);
 
-        // TODO: add dump option to logs and use it here
         logs::log(logs::Level::Error, "Failed to compile shader! (type: %u)\nDumping logs:\n%s", type, logBuff);
 
         delete[] logBuff;
