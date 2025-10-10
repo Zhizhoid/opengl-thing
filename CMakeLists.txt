@@ -17,9 +17,7 @@ add_compile_options(-Wall -Wformat -Werror=format -Werror=mismatched-new-delete)
 
 # core
 add_subdirectory(core/logs)
-
-# app
-add_subdirectory(app/shaders)
+add_subdirectory(core/shaders)
 
 add_executable(opengl_thing main.cpp)
 
