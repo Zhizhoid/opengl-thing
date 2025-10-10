@@ -18,10 +18,11 @@ add_compile_options(-Wall -Wformat -Werror=format -Werror=mismatched-new-delete)
 # core
 add_subdirectory(core/logs)
 
+# app
+add_subdirectory(app/shaders)
+
 add_executable(opengl_thing main.cpp)
 
 target_include_directories(opengl_thing PRIVATE deps/glfw/include)
-target_link_libraries(opengl_thing glfw glad_gl)
-
-target_link_libraries(opengl_thing logs)
+target_link_libraries(opengl_thing PRIVATE glfw glad_gl logs shaders)
 
