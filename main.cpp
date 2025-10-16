@@ -7,6 +7,9 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 // Function prototypes
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
 
@@ -72,10 +75,10 @@ int main()
     glBindVertexArray(vao);
 
     float vertices[]{
-        0.0f, 0.0f, 0.0f, //
-        0.5f, 0.0f, 0.0f, //
-        0.5f, 0.5f, 0.0f, //
-        0.0f, 0.5f, 0.0f, //
+        /* position: */ 0.0f, 0.0f, 0.0f, /* texture: */ 0.0f, 0.0f, //
+        /* position: */ 0.5f, 0.0f, 0.0f, /* texture: */ 1.0f, 0.0f, //
+        /* position: */ 0.5f, 0.5f, 0.0f, /* texture: */ 1.0f, 1.0f, //
+        /* position: */ 0.0f, 0.5f, 0.0f, /* texture: */ 0.0f, 1.0f, //
     };
 
     unsigned int indices[]{
@@ -93,11 +96,38 @@ int main()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, 0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, reinterpret_cast<void *>(sizeof(float) * 3));
 
-    const std::string vs = loadFileContents("../res/shaders/basic_color_position/vs.glsl").value_or("");
-    const std::string fs = loadFileContents("../res/shaders/basic_color_position/fs.glsl").value_or("");
+    // texture
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    int texWidth, texHeight, texNrChan;
+    auto texData = stbi_load("../res/textures/container.jpg", &texWidth, &texHeight, &texNrChan, 0);
+    logs::log(logs::Level::Info, "Texture parameters: w: %d, h: %d, nrChan: %d, dataPtr: %p", texWidth, texHeight, texNrChan, texData);
+
+    if (texData)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texData);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        logs::log(logs::Level::Error, "Failed to load texture!");
+    }
+
+    stbi_image_free(texData);
+
+    const std::string vs = loadFileContents("../res/shaders/basic_texture/vs.glsl").value_or("");
+    const std::string fs = loadFileContents("../res/shaders/basic_texture/fs.glsl").value_or("");
 
     VertexFragmentShader shaderProgram(vs, fs);
 

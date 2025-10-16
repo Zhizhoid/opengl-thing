@@ -21,6 +21,6 @@ add_subdirectory(core/shaders)
 
 add_executable(opengl_thing main.cpp)
 
-target_include_directories(opengl_thing PRIVATE deps/glfw/include)
+target_include_directories(opengl_thing PRIVATE deps/glfw/include deps/stb)
 target_link_libraries(opengl_thing PRIVATE glfw glad_gl logs shaders)
 
