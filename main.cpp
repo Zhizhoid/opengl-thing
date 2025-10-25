@@ -99,41 +99,64 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, 0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, reinterpret_cast<void *>(sizeof(float) * 3));
+    glEnableVertexAttribArray(1);
 
     // texture
-    GLuint texture;
-    glGenTextures(1, &texture);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    GLuint texture0;
+    glGenTextures(1, &texture0);
+    glBindTexture(GL_TEXTURE_2D, texture0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
+    
     int texWidth, texHeight, texNrChan;
-    auto texData = stbi_load("../res/textures/container.jpg", &texWidth, &texHeight, &texNrChan, 0);
+    unsigned char *texData = stbi_load("../res/textures/container.jpg", &texWidth, &texHeight, &texNrChan, 0);
     logs::log(logs::Level::Info, "Texture parameters: w: %d, h: %d, nrChan: %d, dataPtr: %p", texWidth, texHeight, texNrChan, texData);
-
     if (texData)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texData);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texData + 3*(0));
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else
     {
         logs::log(logs::Level::Error, "Failed to load texture!");
     }
-
+    stbi_image_free(texData);
+    
+    glActiveTexture(GL_TEXTURE1);
+    GLuint texture1;
+    glGenTextures(1, &texture1);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    texData = stbi_load("../res/textures/awesomeface.png", &texWidth, &texHeight, &texNrChan, 0);
+    logs::log(logs::Level::Info, "Texture (2nd) parameters: w: %d, h: %d, nrChan: %d, dataPtr: %p", texWidth, texHeight, texNrChan, texData);
+    if (texData)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData + 3*(0));
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        logs::log(logs::Level::Error, "Failed to load 2nd texture!");
+    }
     stbi_image_free(texData);
 
-    const std::string vs = loadFileContents("../res/shaders/basic_texture/vs.glsl").value_or("");
-    const std::string fs = loadFileContents("../res/shaders/basic_texture/fs.glsl").value_or("");
+    const std::string vs = loadFileContents("../res/shaders/texture_blend/vs.glsl").value_or("");
+    const std::string fs = loadFileContents("../res/shaders/texture_blend/fs.glsl").value_or("");
 
-    VertexFragmentShader shaderProgram(vs, fs);
-
+    VertexFragmentShader shaderProgram(vs.data(), fs.data());
+    
     logs::log(logs::Level::Info, "Status: %d", static_cast<int>(shaderProgram.getError()));
-
+    
     shaderProgram.use();
+    shaderProgram.setUniform("texture0", 0);
+    shaderProgram.setUniform("texture1", 1);
 
     // Game loop
     while (!glfwWindowShouldClose(window))

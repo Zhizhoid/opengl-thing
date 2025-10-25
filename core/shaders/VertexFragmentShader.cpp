@@ -1,7 +1,7 @@
 #include "VertexFragmentShader.hpp"
 #include <log.hpp>
 
-VertexFragmentShader::VertexFragmentShader(const std::string &vs_src, const std::string &fs_src)
+VertexFragmentShader::VertexFragmentShader(const char *vs_src, const char *fs_src)
 {
     m_error = Error::Ok;
 
@@ -19,6 +19,11 @@ VertexFragmentShader::VertexFragmentShader(const std::string &vs_src, const std:
         m_error = ret.error();
 }
 
+VertexFragmentShader::~VertexFragmentShader()
+{
+    glDeleteProgram(m_program);
+}
+
 Shader::Error VertexFragmentShader::getError()
 {
     return m_error;
@@ -34,16 +39,18 @@ Shader::Error VertexFragmentShader::use()
     return Error::Ok;
 }
 
-VertexFragmentShader::~VertexFragmentShader()
+Shader::Error VertexFragmentShader::setUniform(const char *name, int a)
 {
-    glDeleteProgram(m_program);
+    if (m_error != Error::Ok)
+        return m_error;
+    glUniform1i(glGetUniformLocation(m_program, name), a);
+    return Error::Ok;
 }
 
-std::expected<GLuint, Shader::Error> VertexFragmentShader::compileShader(GLenum type, const std::string &source)
+std::expected<GLuint, Shader::Error> VertexFragmentShader::compileShader(GLenum type, const char *source)
 {
     GLuint id = glCreateShader(type);
-    const char *sourceRaw = source.c_str();
-    glShaderSource(id, 1, &sourceRaw, nullptr);
+    glShaderSource(id, 1, &source, nullptr);
     glCompileShader(id);
 
     GLint compileStatus;
