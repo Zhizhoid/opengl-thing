@@ -111,6 +111,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
+    stbi_set_flip_vertically_on_load(true);
     int texWidth, texHeight, texNrChan;
     unsigned char *texData = stbi_load("../res/textures/container.jpg", &texWidth, &texHeight, &texNrChan, 0);
     logs::log(logs::Level::Info, "Texture parameters: w: %d, h: %d, nrChan: %d, dataPtr: %p", texWidth, texHeight, texNrChan, texData);
